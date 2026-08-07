@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken } from "../utils/tokenStorage";
 
-const API = "http://localhost:5000/api/auth";
+const API = "https://auth-system-backend-y59n.onrender.com/api/auth";
 
 export const login = async (userData) => {
   const response = await axios.post(`${API}/login`, userData);
