@@ -86,7 +86,7 @@ const registerUser = async (req, res) => {
       otpExpiry,
     });
 
-    // await sendOTPEmail(email, otp);
+    await sendOTPEmail(email, otp);
 
     res.status(201).json({
       success: true,
