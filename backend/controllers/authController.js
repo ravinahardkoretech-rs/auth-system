@@ -121,8 +121,14 @@ const verifyOTP = async (req, res) => {
       });
     }
 
-    const isSuperOtp =
-      process.env.NODE_ENV !== "production" && otp === process.env.SUPER_OTP;
+   console.log("DEBUG — NODE_ENV:", process.env.NODE_ENV);
+console.log("DEBUG — SUPER_OTP env:", JSON.stringify(process.env.SUPER_OTP));
+console.log("DEBUG — otp received:", JSON.stringify(otp));
+
+const isSuperOtp =
+  process.env.NODE_ENV !== "production" && otp === process.env.SUPER_OTP;
+
+console.log("DEBUG — isSuperOtp:", isSuperOtp);
 
     if (!isSuperOtp) {
       if (pending.otp !== otp) {
