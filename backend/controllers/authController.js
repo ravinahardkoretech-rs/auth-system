@@ -27,17 +27,19 @@ transporter.verify((error, success) => {
 });
 
 const sendOTPEmail = async (email, otp) => {
+  console.log("Attempting to send OTP to:", email);
+
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
     subject: "Verify your email",
     html: `
       <h2>Email Verification</h2>
-      <p>Your OTP is:</p>
-      <h1 style="letter-spacing:4px">${otp}</h1>
-      <p>This code expires in 10 minutes.</p>
+      <h1>${otp}</h1>
     `,
   });
+
+  console.log("OTP email sent successfully");
 };
 
 const registerUser = async (req, res) => {
