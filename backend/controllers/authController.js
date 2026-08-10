@@ -76,7 +76,11 @@ const registerUser = async (req, res) => {
       otpExpiry,
     });
 
-    await sendOTPEmail(email, otp);
+   try {
+      await sendOTPEmail(email, otp);
+    } catch (mailError) {
+      console.error("OTP email failed to send (continuing anyway):", mailError.message);
+    }
 
     res.status(201).json({
       success: true,
