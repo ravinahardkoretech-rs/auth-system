@@ -3,35 +3,17 @@ const PendingUser = require("../models/PendingUser");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-console.log("EMAIL_USER:", process.env.EMAIL_USER);
-console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
+console.log("RESEND_API_KEY exists:", !!process.env.RESEND_API_KEY);
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  requireTLS: true,
-  family: 4, // force IPv4 — fixes ENETUNREACH on Render
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("MAIL ERROR:", error);
-  } else {
-    console.log("MAIL SERVER READY");
-  }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendOTPEmail = async (email, otp) => {
   console.log("Attempting to send OTP to:", email);
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
+  const { data, error } = await resend.emails.send({
+    from: "onboarding@resend.dev", // swap to your verified domain later
     to: email,
     subject: "Verify your email",
     html: `
@@ -40,7 +22,12 @@ const sendOTPEmail = async (email, otp) => {
     `,
   });
 
-  console.log("OTP email sent successfully");
+  if (error) {
+    console.error("RESEND ERROR:", error);
+    throw new Error(error.message || "Failed to send OTP email");
+  }
+
+  console.log("OTP email sent successfully:", data?.id);
 };
 
 const registerUser = async (req, res) => {
@@ -315,8 +302,8 @@ const forgotPassword = async (req, res) => {
 
     const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
+    const { error } = await resend.emails.send({
+      from: "onboarding@resend.dev", // swap to your verified domain later
       to: email,
       subject: "Password Reset",
       html: `
@@ -325,6 +312,11 @@ const forgotPassword = async (req, res) => {
         <a href="${resetLink}">Reset Password</a>
       `,
     });
+
+    if (error) {
+      console.error("RESEND ERROR:", error);
+      return res.status(500).json({ success: false, message: "Failed to send reset email" });
+    }
 
     res.json({ success: true, message: "Reset link sent" });
   } catch (error) {
